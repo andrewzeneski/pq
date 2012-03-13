@@ -14,11 +14,14 @@ import (
 	"net/url"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var (
 	ErrSSLNotSupported = errors.New("SSL is not enabled on the server")
 )
+
+const timeFormat = "2006-01-02 15:04:05.000000-07"
 
 type h struct {
 	T int8
@@ -591,10 +594,16 @@ func encodeParam(param interface{}) (int32, []byte) {
 		panic(fmt.Sprintf("unknown type for %T", param))
 	case int, uint8, uint16, uint32, uint64, int8, int16, int32, int64:
 		s = fmt.Sprintf("%d", param)
+	case float32, float64:
+		s = fmt.Sprintf("%f", param)
 	case string, []byte:
 		s = fmt.Sprintf("%s", param)
 	case bool:
 		s = fmt.Sprintf("%t", param)
+	case time.Time:
+		s = param.(time.Time).Format(timeFormat)
+	case nil:
+		return -1, []byte{}
 	}
 
 	return int32(len(s)), []byte(s)
